@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RohindChat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #FFFC00;
+            --secondary: #FF0050;
+            --dark: #1a1a1a;
+            --light: #f5f5f5;
+            --gray: #8e8e93;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: var(--light);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 300px;
+            background-color: var(--dark);
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            border-bottom: 1px solid #333;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #333;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .user-info h3 {
+            font-size: 16px;
+        }
+
+        .user-info p {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .nav-menu {
+            padding: 15px 0;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .nav-item:hover {
+            background-color: #333;
+        }
+
+        .nav-item.active {
+            background-color: #333;
+            border-left: 3px solid var(--primary);
+        }
+
+        .nav-item i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h2 {
+            font-size: 20px;
+        }
+
+        .search-box {
+            background-color: #333;
+            border-radius: 20px;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            width: 200px;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: var(--light);
+            margin-left: 8px;
+            width: 100%;
+            outline: none;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Friends List */
+        .friends-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .friend-card {
+            background-color: #222;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .friend-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .friend-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--secondary);
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .friend-name {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .friend-status {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        /* Chat Area */
+        .chat-area {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chat-header {
+            padding: 15px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-header .friend-avatar {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 18px;
+            position: relative;
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            background-color: var(--primary);
+            color: var(--dark);
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.received {
+            align-self: flex-start;
+            background-color: #333;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-time {
+            font-size: 10px;
+            text-align: right;
+            margin-top: 5px;
+            color: var(--gray);
+        }
+
+        .message.received .message-time {
+            color: #aaa;
+        }
+
+        .message-image {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 5px;
+        }
+
+        .chat-input {
+            padding: 15px;
+            border-top: 1px solid #333;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-input input {
+            flex: 1;
+            background-color: #333;
+            border: none;
+            border-radius: 20px;
+            padding: 12px 15px;
+            color: var(--light);
+            outline: none;
+        }
+
+        .chat-input button {
+            background-color: transparent;
+            border: none;
+            color: var(--primary);
+            font-size: 20px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        /* Add Friend Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--dark);
+            border-radius: 10px;
+            padding: 20px;
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--light);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            background-color: #333;
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: var(--light);
+            outline: none;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: var(--dark);
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        /* Photo Preview */
+        .photo-preview {
+            display: none;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .photo-preview img {
+            max-width: 200px;
+            border-radius: 10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 80px;
+            }
+            
+            .user-info, .nav-item span {
+                display: none;
+            }
+            
+            .nav-item {
+                justify-content: center;
+            }
+            
+            .nav-item i {
+                margin-right: 0;
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">RohindChat</div>
+            
+            <div class="user-profile">
+                <div class="user-avatar">R</div>
+                <div class="user-info">
+                    <h3>Rohind</h3>
+                    <p>Online</p>
+                </div>
+            </div>
+            
+            <div class="nav-menu">
+                <div class="nav-item active" onclick="showSection('chats')">
+                    <i class="fas fa-comment"></i>
+                    <span>Chats</span>
+                </div>
+                <div class="nav-item" onclick="showSection('friends')">
+                    <i class="fas fa-user-friends"></i>
+                    <span>Friends</span>
+                </div>
+                <div class="nav-item" onclick="showSection('discover')">
+                    <i class="fas fa-compass"></i>
+                    <span>Discover</span>
+                </div>
+                <div class="nav-item" onclick="openAddFriendModal()">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Add Friend</span>
+                </div>
+                <div class="nav-item" onclick="showSection('memories')">
+                    <i class="fas fa-history"></i>
+                    <span>Memories</span>
+                </div>
+                <div class="nav-item" onclick="showSection('settings')">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h2 id="section-title">Chats</h2>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search...">
+                </div>
+            </div>
+            
+            <div class="content-area">
+                <!-- Friends List -->
+                <div id="friends-section" class="friends-list">
+                    <div class="friend-card" onclick="openChat('alex')">
+                        <div class="friend-avatar">A</div>
+                        <div class="friend-name">Alex Johnson</div>
+                        <div class="friend-status">Active 2m ago</div>
+                    </div>
+                    
+                    <div class="friend-card" onclick="openChat('sam')">
+                        <div class="friend-avatar">S</div>
+                        <div class="friend-name">Sam Wilson</div>
+                        <div class="friend-status">Active 5m ago</div>
+                    </div>
+                    
+                    <div class="friend-card" onclick="openChat('emma')">
+                        <div class="friend-avatar">E</div>
+                        <div class="friend-name">Emma Davis</div>
+                        <div class="friend-status">Active 10m ago</div>
+                    </div>
+                    
+                    <div class="friend-card" onclick="openChat('mike')">
+                        <div class="friend-avatar">M</div>
+                        <div class="friend-name">Mike Taylor</div>
+                        <div class="friend-status">Active 1h ago</div>
+                    </div>
+                    
+                    <div class="friend-card" onclick="openChat('sarah')">
+                        <div class="friend-avatar">S</div>
+                        <div class="friend-name">Sarah Miller</div>
+                        <div class="friend-status">Active 2h ago</div>
+                    </div>
+                </div>
+                
+                <!-- Chat Area -->
+                <div id="chat-section" class="chat-area">
+                    <div class="chat-header">
+                        <div class="friend-avatar" id="chat-friend-avatar">A</div>
+                        <div>
+                            <div id="chat-friend-name">Alex Johnson</div>
+                            <div class="friend-status" id="chat-friend-status">Active now</div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-messages" id="chat-messages">
+                        <!-- Messages will be dynamically added here -->
+                    </div>
+                    
+                    <div class="chat-input">
+                        <input type="text" id="message-input" placeholder="Type a message...">
+                        <button id="attach-btn"><i class="fas fa-paperclip"></i></button>
+                        <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                        <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                    <div class="photo-preview" id="photo-preview">
+                        <img id="preview-image" src="" alt="Preview">
+                        <button class="btn" onclick="sendPhoto()">Send Photo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Friend Modal -->
+    <div class="modal" id="add-friend-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Friend</h3>
+                <button class="close-modal" onclick="closeAddFriendModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="friend-id">Friend's ID</label>
+                <input type="text" id="friend-id" placeholder="Enter friend's RohindChat ID">
+            </div>
+            <button class="btn btn-block" onclick="addFriend()">Send Friend Request</button>
+        </div>
+    </div>
+
+    <script>
+        // Current active chat
+        let currentChat = null;
+        
+        // Sample messages data
+        const messages = {
+            alex: [
+                { text: "Hey, how's it going?", sender: "alex", time: "10:30 AM", type: "text" },
+                { text: "Not much, just working on some projects. You?", sender: "me", time: "10:32 AM", type: "text" },
+                { text: "Same here! Check out this photo I took yesterday", sender: "alex", time: "10:33 AM", type: "image", content: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" }
+            ],
+            sam: [
+                { text: "Are we still meeting tomorrow?", sender: "me", time: "9:15 AM", type: "text" },
+                { text: "Yes, 2 PM at the coffee shop", sender: "sam", time: "9:20 AM", type: "text" }
+            ],
+            emma: [
+                { text: "Happy birthday! 🎉", sender: "me", time: "12:05 AM", type: "text" },
+                { text: "Thank you! 😊", sender: "emma", time: "8:30 AM", type: "text" }
+            ]
+        };
+        
+        // Friend data
+        const friends = {
+            alex: { name: "Alex Johnson", avatar: "A", status: "Active now" },
+            sam: { name: "Sam Wilson", avatar: "S", status: "Active 5m ago" },
+            emma: { name: "Emma Davis", avatar: "E", status: "Active 10m ago" },
+            mike: { name: "Mike Taylor", avatar: "M", status: "Active 1h ago" },
+            sarah: { name: "Sarah Miller", avatar: "S", status: "Active 2h ago" }
+        };
+        
+        // Show different sections
+        function showSection(section) {
+            document.getElementById('friends-section').style.display = 'grid';
+            document.getElementById('chat-section').style.display = 'none';
+            
+            // Update active nav item
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // Update section title
+            const titles = {
+                chats: 'Chats',
+                friends: 'Friends',
+                discover: 'Discover',
+                memories: 'Memories',
+                settings: 'Settings'
+            };
+            document.getElementById('section-title').textContent = titles[section];
+        }
+        
+        // Open chat with a friend
+        function openChat(friendId) {
+            currentChat = friendId;
+            const friend = friends[friendId];
+            
+            // Update chat header
+            document.getElementById('chat-friend-avatar').textContent = friend.avatar;
+            document.getElementById('chat-friend-name').textContent = friend.name;
+            document.getElementById('chat-friend-status').textContent = friend.status;
+            
+            // Show chat area and hide friends list
+            document.getElementById('friends-section').style.display = 'none';
+            document.getElementById('chat-section').style.display = 'flex';
+            
+            // Load messages
+            loadMessages(friendId);
+            
+            // Update section title
+            document.getElementById('section-title').textContent = friend.name;
+        }
+        
+        // Load messages for a chat
+        function loadMessages(friendId) {
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.innerHTML = '';
+            
+            if (messages[friendId]) {
+                messages[friendId].forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${msg.sender === 'me' ? 'sent' : 'received'}`;
+                    
+                    if (msg.type === 'text') {
+                        messageDiv.innerHTML = `
+                            <div>${msg.text}</div>
+                            <div class="message-time">${msg.time}</div>
+                        `;
+                    } else if (msg.type === 'image') {
+                        messageDiv.innerHTML = `
+                            <div>${msg.text}</div>
+                            <img src="${msg.content}" class="message-image" alt="Shared photo">
+                            <div class="message-time">${msg.time}</div>
+                        `;
+                    }
+                    
+                    chatMessages.appendChild(messageDiv);
+                });
+            }
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Send a message
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
+            
+            if (text && currentChat) {
+                // Add message to data
+                if (!messages[currentChat]) {
+                    messages[currentChat] = [];
+                }
+                
+                const now = new Date();
+                const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                messages[currentChat].push({
+                    text: text,
+                    sender: 'me',
+                    time: time,
+                    type: 'text'
+                });
+                
+                // Reload messages
+                loadMessages(currentChat);
+                
+                // Clear input
+                input.value = '';
+                
+                // Simulate reply after a delay
+                setTimeout(() => {
+                    const replies = [
+                        "That's cool!",
+                        "I see what you mean",
+                        "Let me think about that",
+                        "Haha, definitely!",
+                        "I'll get back to you on that"
+                    ];
+                    
+                    const randomReply = replies[Math.floor(Math.random() * replies.length)];
+                    
+                    messages[currentChat].push({
+                        text: randomReply,
+                        sender: currentChat,
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        type: 'text'
+                    });
+                    
+                    loadMessages(currentChat);
+                }, 1000 + Math.random() * 2000);
+            }
+        }
+        
+        // Open add friend modal
+        function openAddFriendModal() {
+            document.getElementById('add-friend-modal').style.display = 'flex';
+        }
+        
+        // Close add friend modal
+        function closeAddFriendModal() {
+            document.getElementById('add-friend-modal').style.display = 'none';
+        }
+        
+        // Add a friend
+        function addFriend() {
+            const friendId = document.getElementById('friend-id').value.trim();
+            
+            if (friendId) {
+                alert(`Friend request sent to ${friendId}!`);
+                document.getElementById('friend-id').value = '';
+                closeAddFriendModal();
+            } else {
+                alert('Please enter a friend ID');
+            }
+        }
+        
+        // Handle image upload
+        document.getElementById('attach-btn').addEventListener('click', function() {
+            document.getElementById('image-upload').click();
+        });
+        
+        document.getElementById('image-upload').addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    document.getElementById('preview-image').src = event.target.result;
+                    document.getElementById('photo-preview').style.display = 'block';
+                }
+                
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+        
+        // Send photo
+        function sendPhoto() {
+            if (currentChat) {
+                const imageSrc = document.getElementById('preview-image').src;
+                
+                // Add message to data
+                if (!messages[currentChat]) {
+                    messages[currentChat] = [];
+                }
+                
+                const now = new Date();
+                const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                messages[currentChat].push({
+                    text: "Check out this photo!",
+                    sender: 'me',
+                    time: time,
+                    type: 'image',
+                    content: imageSrc
+                });
+                
+                // Reload messages
+                loadMessages(currentChat);
+                
+                // Hide preview
+                document.getElementById('photo-preview').style.display = 'none';
+                document.getElementById('image-upload').value = '';
+                
+                // Simulate reply after a delay
+                setTimeout(() => {
+                    messages[currentChat].push({
+                        text: "Nice photo! 📸",
+                        sender: currentChat,
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        type: 'text'
+                    });
+                    
+                    loadMessages(currentChat);
+                }, 1000 + Math.random() * 2000);
+            }
+        }
+        
+        // Event listeners
+        document.getElementById('send-btn').addEventListener('click', sendMessage);
+        
+        document.getElementById('message-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Initialize with first friend's chat
+        window.onload = function() {
+            openChat('alex');
+        };
+    </script>
+</body>
+</html>
